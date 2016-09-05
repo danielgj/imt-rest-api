@@ -2,9 +2,12 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var brandSchema = new Schema({
-  _id: { type: String }
+  brand: { type: String }
 }, {
     timestamps: true
 });
 
-module.exports = brandSchema;
+var Brands = mongoose.model('Brand', brandSchema);
+
+// make this available to our Node applications
+module.exports = Brands;

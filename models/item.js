@@ -7,8 +7,14 @@ var Schema = mongoose.Schema;
 var itemSchema = new Schema({
 
   name: { type: String, required: true },
-  category: Category.categorySchema,
-  brand: Brand.brandSchema,
+  category: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Category'
+            },
+  brand: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Brand'
+            },
   model: {type: String},
   os: {type: String},
   serial: {type: String},
@@ -24,10 +30,14 @@ itemSchema.index({ name: 'text' });
 
 
 itemSchema.virtual('displayName').get(function() {
-  return this.name + "(" + this.category._id + " " + this.brand._id + ")";
+  return this.name + " (" + this.category.category + " " + this.brand.brand + ")";
 });
 
 itemSchema.set('toObject', { virtuals: true });
 itemSchema.set('toJSON', { virtuals: true });
 
-module.exports = itemSchema;
+
+var Items = mongoose.model('Item', itemSchema);
+
+// make this available to our Node applications
+module.exports = Items;

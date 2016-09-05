@@ -2,9 +2,9 @@ var express = require('express');
 var router = express.Router();
 var passport = require('passport');
 var User = require('../models/user');
+var Loans = require('../models/loan');
 var Verify    = require('./verify');
 
-/* GET users listing. */
 router.get('/', Verify.verifyAdmin, function(req, res, next) {
   User.find({}, function (err, users) {
         if (err) throw err;
@@ -34,7 +34,9 @@ router.post('/register', function(req, res) {
         
         user.save(function(err,user) {
             passport.authenticate('local')(req, res, function () {
-                return res.status(200).json({status: 'Registration Successful!'});
+                return res.status(200).json({
+                    success: true
+                });
             });
         });
     });
@@ -62,6 +64,7 @@ router.post('/login', function(req, res, next) {
                   {
                     status: 'Login successful!',
                     success: true,
+                    id_user: user._id,
                     name: user.getName(),
                     role: user.role,
                     email: user.email,
@@ -71,11 +74,60 @@ router.post('/login', function(req, res, next) {
   })(req,res,next);
 });
 
+/*
 router.get('/logout', function(req, res) {
     req.logout();
   res.status(200).json({
     status: 'Bye!'
   });
+});
+*/
+
+router.delete('/:userId', Verify.verifyAdmin, function(req, res, next) {
+  Loans.find({user: req.params.userId})
+        .exec(function (err, loans) {
+            if (err) {
+                throw err;
+            }
+        
+            if(loans.length==0) {
+                User.findByIdAndRemove(req.params.userId, function (err, resp) {        
+                    if (err) throw err;
+                    res.json(resp);
+                });            
+            } else {
+                res.status(400).json({msg: "There are loans for this user"});
+            }
+        });
+});
+
+router.put('/:userId', Verify.verifyAdmin, function(req, res, next) {
+  
+    User.findByIdAndUpdate(req.params.userId, {
+        $set: req.body
+    }, function (err, user) {
+        if (err) {
+            console.log("Error: " + err);
+            throw err;
+        } 
+        res.json(user);
+    });
+  
+});
+
+router.put('/changepass/:username', Verify.verifyAdmin, function(req, res, next) {
+    User.findByUsername(req.params.username).then(function(sanitizedUser){
+        if (sanitizedUser){
+            sanitizedUser.setPassword(req.body.password, function(){
+                sanitizedUser.save();
+                res.status(200).json({message: 'password reset successful'});
+            });
+        } else {
+            res.status(500).json({message: 'This user does not exist'});
+        }
+    },function(err){
+        console.error(err);
+    });
 });
 
 module.exports = router;

@@ -2,9 +2,12 @@ var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 
 var categorySchema = new Schema({
-  _id: { type: String }
+  category: { type: String }
 },{
     timestamps: true
 });
 
-module.exports = categorySchema;
+var Categories = mongoose.model('Category', categorySchema);
+
+// make this available to our Node applications
+module.exports = Categories;

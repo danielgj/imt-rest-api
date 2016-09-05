@@ -1,21 +1,26 @@
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
-var logger = require('morgan');
+var morgan = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var LocalStrategy = require('passport-local').Strategy;
+var config = require('./config/config');
+var logger = require("./config/loggers");
 
-var config = require('./config');
+var app = express();
+
+logger.debug("Overriding 'Express' logger");
+app.use(require('morgan')('tiny',{ "stream": logger.stream }));
 
 mongoose.connect(config.mongoUrl);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
     // we're connected!
-    console.log("Connected correctly to server");
+    logger.info("Connected correctly to server");
 });
 
 
@@ -29,11 +34,20 @@ var itemRouter = require('./routes/itemRouter');
 var loanRouter = require('./routes/loanRouter');
 
 
-var app = express();
+
+
+
+// Enable Cross-Origin-Access
+app.use(function(req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
 
 // Secure traffic only
 app.all('*', function(req, res, next){
-    console.log('req start: ',req.secure, req.hostname, req.url, app.get('port'));
+    logger.debug('req start: ',req.secure, req.hostname, req.url, app.get('port'));
   
   //if (req.secure) {
 // return next();
@@ -50,7 +64,6 @@ app.set('view engine', 'jade');
 // uncomment after placing your favicon in /public
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 
-app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
@@ -68,8 +81,8 @@ app.use('/', routes);
 app.use('/users', users);
 app.use('/brands',brandRouter);
 app.use('/categories',categoryRouter);
-//app.use('/items',itemRouter);
-//app.use('/loans',loanRouter);
+app.use('/items',itemRouter);
+app.use('/loans',loanRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

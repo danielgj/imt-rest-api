@@ -23,24 +23,27 @@ var loanSchema = new Schema({
   initDate: {
         type: Date,
         set: function(v) {
-          this.state = 'Encurso';
+          this.state = 'Ongoing';
           return v;
         }
       },
   endDate: {
             type: Date,
             set: function(v) {
-              this.state = 'Cerrado';
+              this.state = 'Closed';
               return v;
             }
           },
   state: {
     type: String,
-    enum: ['Solicitado', 'Encurso', 'Rechazado', 'PdteCierre', 'Cerrado'],
+    enum: ['Requested', 'Ongoing', 'Rejected', 'ClosePending', 'Closed'],
     required: true
   }
 },{
     timestamps: true
 });
 
-module.exports = loanSchema;
+var Loans = mongoose.model('Loan', loanSchema);
+
+// make this available to our Node applications
+module.exports = Loans;

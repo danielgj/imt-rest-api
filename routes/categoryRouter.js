@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var Verify = require('./verify');
 
 var Categories = require('../models/category');
+var Items = require('../models/item');
 
 var categoriesRouter = express.Router();
 categoriesRouter.use(bodyParser.json());
@@ -12,7 +13,9 @@ categoriesRouter.route('/')
 .get(Verify.verifyOrdinaryUser, function (req, res, next) {
     Categories.find({})
         .exec(function (err, categories) {
-        if (err) throw err;
+        if (err) {
+            throw err;
+        }
         res.json(categories);
     });
 })
@@ -27,6 +30,16 @@ categoriesRouter.route('/')
             'Content-Type': 'text/plain'
         });
         res.end('Added the category with id: ' + id);
+    });
+})
+
+.put(Verify.verifyAdmin, function (req, res, next) {
+    Categories.update(req.body, function (err, category) {
+        if (err) throw err;
+        res.writeHead(200, {
+            'Content-Type': 'text/plain'
+        });
+        res.end('Updated the category with id: ' + req.body._id);
     });
 })
 
@@ -58,10 +71,23 @@ categoriesRouter.route('/:categoryId')
 })
 
 .delete(Verify.verifyAdmin, function (req, res, next) {
-    Categories.findByIdAndRemove(req.params.categoryId, function (err, resp) {        
-        if (err) throw err;
-        res.json(resp);
-    });
+    
+    Items.find({category: req.params.categoryId})
+        .exec(function (err, items) {
+            if (err) {
+                throw err;
+            }
+        
+            if(items.length==0) {
+                Categories.findByIdAndRemove(req.params.categoryId, function (err, resp) {        
+                    if (err) throw err;
+                    res.json(resp);
+                });            
+            } else {
+                res.status(400).json({msg: "There are items with that category"});
+            }
+        });
+    
 });
 
 

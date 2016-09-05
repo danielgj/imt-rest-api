@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var Verify = require('./verify');
 
 var Brands = require('../models/brand');
+var Items = require('../models/item');
 
 var brandRouter = express.Router();
 brandRouter.use(bodyParser.json());
@@ -27,6 +28,17 @@ brandRouter.route('/')
             'Content-Type': 'text/plain'
         });
         res.end('Added the brand with id: ' + id);
+    });
+})
+
+.put(Verify.verifyAdmin, function (req, res, next) {
+    Brands.update(req.body, function (err, brand) {
+        if (err) throw err;
+        console.log('Brand updated!');
+        res.writeHead(200, {
+            'Content-Type': 'text/plain'
+        });
+        res.end('Updated the brand with id: ' + req.body._id);
     });
 })
 
@@ -58,9 +70,23 @@ brandRouter.route('/:brandId')
 })
 
 .delete(Verify.verifyAdmin, function (req, res, next) {
-    Brands.findByIdAndRemove(req.params.brandId, function (err, resp) {        if (err) throw err;
-        res.json(resp);
-    });
+    
+    Items.find({brand: req.params.brandId})
+        .exec(function (err, items) {
+            if (err) {
+                throw err;
+            }
+        
+            if(items.length==0) {
+                Brands.findByIdAndRemove(req.params.brandId, function (err, resp) {        
+                    if (err) throw err;
+                    res.json(resp);
+                });            
+            } else {
+                res.status(400).json({msg: "There are items with that brand"});
+            }
+        });
+    
 });
 
 
