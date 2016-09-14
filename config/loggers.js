@@ -1,3 +1,4 @@
+//REST API Custom Loggers Configuration
 var winston = require('winston');
 winston.emitErrs = true;
 

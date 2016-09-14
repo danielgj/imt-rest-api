@@ -12,29 +12,23 @@ var logger = require("./config/loggers");
 
 var app = express();
 
-logger.debug("Overriding 'Express' logger");
 app.use(require('morgan')('tiny',{ "stream": logger.stream }));
 
 mongoose.connect(config.mongoUrl);
 var db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function () {
-    // we're connected!
     logger.info("Connected correctly to server");
 });
 
 
-//Set Routes Here
-
+//Routes Configuration
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var brandRouter = require('./routes/brandRouter');
 var categoryRouter = require('./routes/categoryRouter');
 var itemRouter = require('./routes/itemRouter');
 var loanRouter = require('./routes/loanRouter');
-
-
-
 
 
 // Enable Cross-Origin-Access
@@ -45,17 +39,21 @@ app.use(function(req, res, next) {
   next();
 });
 
+
+//Uncomment this to allow only secure trafic (certificates should been configured in bin/ folder
+/*
 // Secure traffic only
 app.all('*', function(req, res, next){
     logger.debug('req start: ',req.secure, req.hostname, req.url, app.get('port'));
   
-  //if (req.secure) {
-// return next();
-  //};
-  return next();
-
- //res.redirect('https://'+req.hostname+':'+app.get('secPort')+req.url);
+  if (req.secure) {
+      return next();
+  };
+  
+   res.redirect('https://'+req.hostname+':'+app.get('secPort')+req.url);
 });
+*/
+
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -113,7 +111,5 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
-
 
 module.exports = app;

@@ -12,6 +12,7 @@ router.get('/', Verify.verifyAdmin, function(req, res, next) {
     });
 });
 
+//This method should be enhanced (Password not encrypted)
 router.post('/register', function(req, res) {
     
     User.register(new User({ 
@@ -74,14 +75,6 @@ router.post('/login', function(req, res, next) {
   })(req,res,next);
 });
 
-/*
-router.get('/logout', function(req, res) {
-    req.logout();
-  res.status(200).json({
-    status: 'Bye!'
-  });
-});
-*/
 
 router.delete('/:userId', Verify.verifyAdmin, function(req, res, next) {
   Loans.find({user: req.params.userId})
