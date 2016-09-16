@@ -38,7 +38,7 @@ loanRouter.route('/')
     });
 });
 
-loanRouter.route('/open') //Fix this
+loanRouter.route('/open') 
 .get(Verify.verifyOrdinaryUser, function (req, res, next) {    
     Loans.find({$or:[ {state:'Requested'}, {state:'Ongoing'}, {state: 'ClosePending'}]})
         .populate('item')
@@ -49,7 +49,7 @@ loanRouter.route('/open') //Fix this
     });
 });
 
-loanRouter.route('/pending') //Fix this
+loanRouter.route('/pending') 
 .get(Verify.verifyOrdinaryUser, function (req, res, next) {    
     Loans.find({$or:[ {state:'Requested'},{state: 'ClosePending'}]})
         .populate('item')
@@ -73,7 +73,7 @@ loanRouter.route('/user/:userId')
 
 
 loanRouter.route('/:loanId')
-.put(Verify.verifyAdmin, function (req, res, next) {
+.put(Verify.verifyOrdinaryUser, function (req, res, next) {
     Loans.findByIdAndUpdate(req.params.loanId, {
         $set: req.body
     }, {
